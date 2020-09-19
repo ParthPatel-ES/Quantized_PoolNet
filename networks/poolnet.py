@@ -1,19 +1,16 @@
 import torch
-
-import torch.nn as nn
-import torch.nn.quantized as nnq
-import torch.nn.functional as F
-import torch.nn.quantized.functional as qF
-
+from torch import nn
 from torch.nn import init
-from torch.autograd import Variable
-from torch.quantization import QuantStub, DeQuantStub, fuse_modules
-from torch._jit_internal import Optional
-from torchvision.models.quantization.utils import _replace_relu, quantize_model
+import torch.nn.functional as F
 import math
+from torch.autograd import Variable
 import numpy as np
 
-#from .deeplab_resnet import resnet50_locate
+from .deeplab_resnet import resnet50_locate
+from .vgg import vgg16_locate
+
+
+config_vgg = {'convert': [[128,256,512,512,512],[64,128,256,512,512]], 'deep_pool': [[512, 512, 256, 128], [512, 256, 128, 128], [True, True, True, False], [True, True, True, False]], 'score': 128}  # no convert layer, no conv6
 
 config_resnet = {'convert': [[64,256,512,1024,2048],[128,256,256,512,512]], 'deep_pool': [[512, 512, 256, 256, 128], [512, 256, 256, 128, 128], [False, True, True, True, False], [True, True, True, True, False]], 'score': 128}
 
@@ -22,7 +19,7 @@ class ConvertLayer(nn.Module):
         super(ConvertLayer, self).__init__()
         up = []
         for i in range(len(list_k[0])):
-            up.append(nn.Sequential(nnq.Conv2d(list_k[0][i], list_k[1][i], 1, 1, bias=False), nnq.ReLU(inplace=True)))
+            up.append(nn.Sequential(nn.Conv2d(list_k[0][i], list_k[1][i], 1, 1, bias=False), nn.ReLU(inplace=True)))
         self.convert0 = nn.ModuleList(up)
 
     def forward(self, list_x):
@@ -40,13 +37,13 @@ class DeepPoolLayer(nn.Module):
         pools, convs = [],[]
         for i in self.pools_sizes:
             pools.append(nn.AvgPool2d(kernel_size=i, stride=i))
-            convs.append(nnq.Conv2d(k, k, 3, 1, 1, bias=False))
+            convs.append(nn.Conv2d(k, k, 3, 1, 1, bias=False))
         self.pools = nn.ModuleList(pools)
         self.convs = nn.ModuleList(convs)
-        self.relu = nnq.ReLU()
-        self.conv_sum = nnq.Conv2d(k, k_out, 3, 1, 1, bias=False)
+        self.relu = nn.ReLU()
+        self.conv_sum = nn.Conv2d(k, k_out, 3, 1, 1, bias=False)
         if self.need_fuse:
-            self.conv_sum_c = nnq.Conv2d(k_out, k_out, 3, 1, 1, bias=False)
+            self.conv_sum_c = nn.Conv2d(k_out, k_out, 3, 1, 1, bias=False)
 
     def forward(self, x, x2=None, x3=None):
         x_size = x.size()
@@ -65,7 +62,7 @@ class DeepPoolLayer(nn.Module):
 class ScoreLayer(nn.Module):
     def __init__(self, k):
         super(ScoreLayer, self).__init__()
-        self.score = nnq.Conv2d(k ,1, 1, 1)
+        self.score = nn.Conv2d(k ,1, 1, 1)
 
     def forward(self, x, x_size=None):
         x = self.score(x)
@@ -73,35 +70,37 @@ class ScoreLayer(nn.Module):
             x = F.interpolate(x, x_size[2:], mode='bilinear', align_corners=True)
         return x
 
+def extra_layer(base_model_cfg, vgg):
+    if base_model_cfg == 'vgg':
+        config = config_vgg
+    elif base_model_cfg == 'resnet':
+        config = config_resnet
+    convert_layers, deep_pool_layers, score_layers = [], [], []
+    convert_layers = ConvertLayer(config['convert'])
 
+    for i in range(len(config['deep_pool'][0])):
+        deep_pool_layers += [DeepPoolLayer(config['deep_pool'][0][i], config['deep_pool'][1][i], config['deep_pool'][2][i], config['deep_pool'][3][i])]
+
+    score_layers = ScoreLayer(config['score'])
+
+    return vgg, convert_layers, deep_pool_layers, score_layers
 
 
 class PoolNet(nn.Module):
-    def __init__(self):
+    def __init__(self, base_model_cfg, base, convert_layers, deep_pool_layers, score_layers):
         super(PoolNet, self).__init__()
-        config = config_resnet
-        convert_layers, deep_pool_layers, score_layers = [], [], []
-        convert_layers = ConvertLayer(config['convert'])
-        test = 15
-        self.test = test
-        
-        for i in range(len(config['deep_pool'][0])):
-            deep_pool_layers += [DeepPoolLayer(config['deep_pool'][0][i], config['deep_pool'][1][i], config['deep_pool'][2][i], config['deep_pool'][3][i])]
-
-        score_layers = ScoreLayer(config['score'])        
-
-        #self.base_model_cfg = 'resnet'
-        self.base = ResNet_locate(Bottleneck, [3, 4, 6, 3])
+        self.base_model_cfg = base_model_cfg
+        self.base = base
         self.deep_pool = nn.ModuleList(deep_pool_layers)
         self.score = score_layers
-        #if self.base_model_cfg == 'resnet':
-        self.convert = convert_layers
+        if self.base_model_cfg == 'resnet':
+            self.convert = convert_layers
 
     def forward(self, x):
         x_size = x.size()
         conv2merge, infos = self.base(x)
-        #if self.base_model_cfg == 'resnet':
-        conv2merge = self.convert(conv2merge)
+        if self.base_model_cfg == 'resnet':
+            conv2merge = self.convert(conv2merge)
         conv2merge = conv2merge[::-1]
 
         edge_merge = []
@@ -113,10 +112,14 @@ class PoolNet(nn.Module):
         merge = self.score(merge, x_size)
         return merge
 
+def build_model(base_model_cfg='vgg'):
+    if base_model_cfg == 'vgg':
+        return PoolNet(base_model_cfg, *extra_layer(base_model_cfg, vgg16_locate()))
+    elif base_model_cfg == 'resnet':
+        return PoolNet(base_model_cfg, *extra_layer(base_model_cfg, resnet50_locate()))
 
 def weights_init(m):
-    if isinstance(m, nnq.Conv2d):
+    if isinstance(m, nn.Conv2d):
         m.weight.data.normal_(0, 0.01)
         if m.bias is not None:
             m.bias.data.zero_()
-
