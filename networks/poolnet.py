@@ -6,7 +6,7 @@ import math
 from torch.autograd import Variable
 import numpy as np
 
-from .deeplab_resnet import resnet50_locate
+#from .deeplab_resnet import resnet50_locate
 
 config_resnet = {'convert': [[64,256,512,1024,2048],[128,256,256,512,512]], 'deep_pool': [[512, 512, 256, 256, 128], [512, 256, 256, 128, 128], [False, True, True, True, False], [True, True, True, True, False]], 'score': 128}
 
@@ -14,6 +14,9 @@ class ConvertLayer(nn.Module):
     def __init__(self, list_k):
         super(ConvertLayer, self).__init__()
         up = []
+
+        self.layerCount = len(list_k[0])
+
         for i in range(len(list_k[0])):
             up.append(nn.Sequential(nn.Conv2d(list_k[0][i], list_k[1][i], 1, 1, bias=False), nn.ReLU(inplace=True)))
         self.convert0 = nn.ModuleList(up)
@@ -23,6 +26,11 @@ class ConvertLayer(nn.Module):
         for i in range(len(list_x)):
             resl.append(self.convert0[i](list_x[i]))
         return resl
+
+    def fuse_model(self):
+        for i in range((self.layerCount)):
+            torch.quantization.fuse_modules(self.convert0[i], ['0', '1'], inplace=True)
+            #print(self.convert0[i])
 
 class DeepPoolLayer(nn.Module):
     def __init__(self, k, k_out, need_x2, need_fuse):
@@ -104,7 +112,18 @@ class PoolNet(nn.Module):
         merge = self.score(merge, x_size)
         return merge
 
-
+    def fuse_model(self):
+        r"""Fuse conv/bn/relu modules in resnet models
+        Fuse conv+bn+relu/ Conv+relu/conv+Bn modules to prepare for quantization.
+        Model is modified in place.  Note that this operation does not change numerics
+        and the model after modification is in floating point
+        """
+        for m in self.modules():
+            print(type(m))
+            if type(m) == ConvertLayer:
+                  
+                  m.fuse_model()
+                  
 def weights_init(m):
     if isinstance(m, nn.Conv2d):
         m.weight.data.normal_(0, 0.01)
