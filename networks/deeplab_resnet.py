@@ -133,29 +133,7 @@ class ResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def _forward_impl(self, x):
-        tmp_x = []
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
-        tmp_x.append(x)
-        x = self.maxpool(x)
-
-        x = self.layer1(x)
-        tmp_x.append(x)
-        x = self.layer2(x)
-        tmp_x.append(x)
-        x = self.layer3(x)
-        tmp_x.append(x)
-        x = self.layer4(x)
-        tmp_x.append(x)
-
-        return tmp_x
-
-    def forward(self, x):
-        return self._forward_impl(x)
-
-    # def forward(self, x):
+    # def _forward_impl(self, x):
     #     tmp_x = []
     #     x = self.conv1(x)
     #     x = self.bn1(x)
@@ -173,6 +151,28 @@ class ResNet(nn.Module):
     #     tmp_x.append(x)
 
     #     return tmp_x
+
+    # def forward(self, x):
+    #     return self._forward_impl(x)
+
+    def forward(self, x):
+        tmp_x = []
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        tmp_x.append(x)
+        x = self.maxpool(x)
+
+        x = self.layer1(x)
+        tmp_x.append(x)
+        x = self.layer2(x)
+        tmp_x.append(x)
+        x = self.layer3(x)
+        tmp_x.append(x)
+        x = self.layer4(x)
+        tmp_x.append(x)
+
+        return tmp_x
 
 class ResNet_locate(nn.Module):
     def __init__(self, block, layers):
@@ -203,27 +203,8 @@ class ResNet_locate(nn.Module):
     def load_pretrained_model(self, model):
         self.resnet.load_state_dict(model, strict=False)
 
-    # def _forward_impl(self, x):
-    #     # See note [TorchScript super()]
-    #     x_size = x.size()[2:]
-    #     xs = self.resnet(x)
-
-    #     xs_1 = self.ppms_pre(xs[-1])
-    #     xls = [xs_1]
-    #     for k in range(len(self.ppms)):
-    #         xls.append(F.interpolate(self.ppms[k](xs_1), xs_1.size()[2:], mode='bilinear', align_corners=True))
-    #     xls = self.ppm_cat(torch.cat(xls, dim=1))
-
-    #     infos = []
-    #     for k in range(len(self.infos)):
-    #         infos.append(self.infos[k](F.interpolate(xls, xs[len(self.infos) - 1 - k].size()[2:], mode='bilinear', align_corners=True)))
-        
-    #     return xs, infos
-
-    # def forward(self, x):
-    #     return self._forward_impl(x)
-
-    def forward(self, x):        
+    def _forward_impl(self, x):
+        # See note [TorchScript super()]
         x_size = x.size()[2:]
         xs = self.resnet(x)
 
@@ -237,7 +218,26 @@ class ResNet_locate(nn.Module):
         for k in range(len(self.infos)):
             infos.append(self.infos[k](F.interpolate(xls, xs[len(self.infos) - 1 - k].size()[2:], mode='bilinear', align_corners=True)))
         
-        return xs, infos        
+        return xs, infos
+
+    def forward(self, x):
+        return self._forward_impl(x)
+
+    # def forward(self, x):        
+    #     x_size = x.size()[2:]
+    #     xs = self.resnet(x)
+
+    #     xs_1 = self.ppms_pre(xs[-1])
+    #     xls = [xs_1]
+    #     for k in range(len(self.ppms)):
+    #         xls.append(F.interpolate(self.ppms[k](xs_1), xs_1.size()[2:], mode='bilinear', align_corners=True))
+    #     xls = self.ppm_cat(torch.cat(xls, dim=1))
+
+    #     infos = []
+    #     for k in range(len(self.infos)):
+    #         infos.append(self.infos[k](F.interpolate(xls, xs[len(self.infos) - 1 - k].size()[2:], mode='bilinear', align_corners=True)))
+        
+    #     return xs, infos        
 
 def resnet50_locate():
     model = ResNet_locate(Bottleneck, [3, 4, 6, 3])

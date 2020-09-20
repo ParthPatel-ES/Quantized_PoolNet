@@ -142,27 +142,29 @@ class QuantizableResNet_locate(ResNet_locate):
     def forward(self, x):
         
         x = self.quant(x)
-        x_size = x.size()[2:]
-        xs = self.resnet(x)
+        # x_size = x.size()[2:]
+        # xs = self.resnet(x)
 
-        xs_1 = self.ppms_pre(xs[-1])
-        xls = [xs_1]
-        for k in range(len(self.ppms)):
-            xls.append(F.interpolate(self.ppms[k](xs_1), xs_1.size()[2:], mode='bilinear', align_corners=True))
-        xls = self.ppm_cat(torch.cat(xls, dim=1))
+        # xs_1 = self.ppms_pre(xs[-1])
+        # xls = [xs_1]
+        # for k in range(len(self.ppms)):
+        #     xls.append(F.interpolate(self.ppms[k](xs_1), xs_1.size()[2:], mode='bilinear', align_corners=True))
+        # xls = self.ppm_cat(torch.cat(xls, dim=1))
 
-        infos = []
-        for k in range(len(self.infos)):
-            infos.append(self.infos[k](F.interpolate(xls, xs[len(self.infos) - 1 - k].size()[2:], mode='bilinear', align_corners=True)))
+        # infos = []
+        # for k in range(len(self.infos)):
+        #     infos.append(self.infos[k](F.interpolate(xls, xs[len(self.infos) - 1 - k].size()[2:], mode='bilinear', align_corners=True)))
 
         #return xs, infos        
         # Ensure scriptability
         # super(QuantizableResNet,self).forward(x)
         # is not scriptable
-        #x = self._forward_impl(x)
+        x = self._forward_impl(x)
+        x = self.dequant(x)
 
-        x = self.dequant(xs)
-        return x, infos
+
+        #x = self.dequant(xs)
+        return x#, infos
 
     def fuse_model(self):
         r"""Fuse conv/bn/relu modules in resnet models
