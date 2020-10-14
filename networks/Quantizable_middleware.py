@@ -62,8 +62,7 @@ class QuantizableBottleneck(Bottleneck):
         if self.downsample is not None:
             identity = self.downsample(x)
         out = self.skip_add_relu.add_relu(out, identity)
-        #print(self.downsample) 
-        #print('here')
+
         return out
 
     def fuse_model(self):
@@ -78,7 +77,7 @@ class QuantizableBottleneck(Bottleneck):
 
 
 class QuantizableResNet(ResNet):
-
+    #not called but should be
     def __init__(self, *args, **kwargs):
         super(QuantizableResNet, self).__init__(*args, **kwargs) #
         self.relu0 = nn.ReLU(inplace=False)
@@ -111,60 +110,35 @@ class QuantizableResNet(ResNet):
         #x = self._forward_impl(x)
         #x = self.dequant(x)
         #return x
-
-    def fuse_model(self):
+    
+    def fuse_model(self): #useless now
         r"""Fuse conv/bn/relu modules in resnet models
         Fuse conv+bn+relu/ Conv+relu/conv+Bn modules to prepare for quantization.
         Model is modified in place.  Note that this operation does not change numerics
         and the model after modification is in floating point
         """
-        #not used/called
+
         fuse_modules(self, ['conv1', 'bn1', 'relu0'], inplace=True)
         
         for m in self.modules():
             #print(type(m))
             if type(m) == QuantizableBottleneck or type(m) == QuantizableBasicBlock:
-                
                 m.fuse_model()
-                
-        
 
 class QuantizableResNet_locate(ResNet_locate):
 
     def __init__(self, *args, **kwargs):
         super(QuantizableResNet_locate, self).__init__(*args, **kwargs) 
-
-        self.quant = torch.quantization.QuantStub()
-        self.dequant = torch.quantization.DeQuantStub()
-
-
+        self.resnet = QuantizableResNet(*args, **kwargs)
+        #self.quant = torch.quantization.QuantStub() 
+        #self.dequant = torch.quantization.DeQuantStub()
 
     def forward(self, x):
         
-        x = self.quant(x)
-        # x_size = x.size()[2:]
-        # xs = self.resnet(x)
-
-        # xs_1 = self.ppms_pre(xs[-1])
-        # xls = [xs_1]
-        # for k in range(len(self.ppms)):
-        #     xls.append(F.interpolate(self.ppms[k](xs_1), xs_1.size()[2:], mode='bilinear', align_corners=True))
-        # xls = self.ppm_cat(torch.cat(xls, dim=1))
-
-        # infos = []
-        # for k in range(len(self.infos)):
-        #     infos.append(self.infos[k](F.interpolate(xls, xs[len(self.infos) - 1 - k].size()[2:], mode='bilinear', align_corners=True)))
-
-        #return xs, infos        
-        # Ensure scriptability
-        # super(QuantizableResNet,self).forward(x)
-        # is not scriptable
+        #x = self.quant(x)
         x = self._forward_impl(x)
-        x = self.dequant(x)
-
-
-        #x = self.dequant(xs)
-        return x#, infos
+        #x = self.dequant(x)
+        return x
 
     def fuse_model(self):
         r"""Fuse conv/bn/relu modules in resnet models
@@ -172,9 +146,10 @@ class QuantizableResNet_locate(ResNet_locate):
         Model is modified in place.  Note that this operation does not change numerics
         and the model after modification is in floating point
         """
-        # fused this was and model size would be larger. 39.24MB vs 105.98MB from 153.23MB
+
 
         if self.ppms:
+          #print(type(self.ppms))
           for k in range(len(self.ppms)):
               torch.quantization.fuse_modules(self.ppms[k], ['1', '2'], inplace=True)
         if self.ppm_cat:
@@ -187,17 +162,21 @@ class QuantizableResNet_locate(ResNet_locate):
         if self.resnet:
               #print(self.resnet)
               torch.quantization.fuse_modules(self.resnet, ['conv1', 'bn1', 'relu'], inplace=True)
-              #self.resnet.fuse_model()                            
+                                        
         for m in self.modules():
             #print(type(m))
             if type(m) == QuantizableBottleneck or type(m) == QuantizableBasicBlock:
                 
                 m.fuse_model()
-                
+
+
+# model = QuantizableResNet_locate(block=QuantizableBottleneck, layers=[3, 4, 6, 3])                 
+# quantize_model(model, 'fbgemm')
+# print(model)
 
 def resnet(block=QuantizableBottleneck, layers=[3, 4, 6, 3]):
 
-    model = QuantizableResNet_locate(block, layers)
+    model = QuantizableResNet_locate(block, layers) 
     model.fuse_model()
     print('---------------------------------------------------------------------------')
     # model = QuantizableResNet(block, layers)
@@ -221,11 +200,10 @@ def resnet(block=QuantizableBottleneck, layers=[3, 4, 6, 3]):
             activation=torch.quantization.default_observer,
             weight=torch.quantization.default_weight_observer)
 
-    #quantize_model(model, backend)
+    #quantize_model(model, backend) will not work for custom model
     torch.quantization.prepare(model, inplace=True)
     model(_dummy_input_data)
     torch.quantization.convert(model, inplace=True)
     return model
 
-model = resnet() #was 39.29mb model
-
+#model = resnet() 

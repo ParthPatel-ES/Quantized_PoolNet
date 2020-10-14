@@ -1,0 +1,512 @@
+QuantizablePoolNet(
+  (base): QuantizableResNet_locate(
+    (resnet): QuantizableResNet(
+      (conv1): QuantizedConvReLU2d(3, 64, kernel_size=(7, 7), stride=(2, 2), scale=0.04984111711382866, zero_point=0, padding=(3, 3))
+      (bn1): Identity()
+      (relu): Identity()
+      (maxpool): MaxPool2d(kernel_size=3, stride=2, padding=1, dilation=1, ceil_mode=True)
+      (layer1): Sequential(
+        (0): QuantizableBottleneck(
+          (conv1): QuantizedConvReLU2d(64, 64, kernel_size=(1, 1), stride=(1, 1), scale=0.031452376395463943, zero_point=0)
+          (bn1): Identity()
+          (conv2): QuantizedConvReLU2d(64, 64, kernel_size=(3, 3), stride=(1, 1), scale=0.047500111162662506, zero_point=0, padding=(1, 1))
+          (bn2): Identity()
+          (conv3): QuantizedConv2d(64, 256, kernel_size=(1, 1), stride=(1, 1), scale=0.12525027990341187, zero_point=69)
+          (bn3): Identity()
+          (relu): QuantizedReLU(inplace=True)
+          (downsample): Sequential(
+            (0): QuantizedConv2d(64, 256, kernel_size=(1, 1), stride=(1, 1), scale=0.038480646908283234, zero_point=61)
+            (1): Identity()
+          )
+          (skip_add_relu): QFunctional(
+            scale=0.06006298214197159, zero_point=0
+            (activation_post_process): Identity()
+          )
+          (relu1): Identity()
+          (relu2): Identity()
+        )
+        (1): QuantizableBottleneck(
+          (conv1): QuantizedConvReLU2d(256, 64, kernel_size=(1, 1), stride=(1, 1), scale=0.029081830754876137, zero_point=0)
+          (bn1): Identity()
+          (conv2): QuantizedConvReLU2d(64, 64, kernel_size=(3, 3), stride=(1, 1), scale=0.03717837482690811, zero_point=0, padding=(1, 1))
+          (bn2): Identity()
+          (conv3): QuantizedConv2d(64, 256, kernel_size=(1, 1), stride=(1, 1), scale=0.1620388776063919, zero_point=75)
+          (bn3): Identity()
+          (relu): QuantizedReLU(inplace=True)
+          (skip_add_relu): QFunctional(
+            scale=0.06811700761318207, zero_point=0
+            (activation_post_process): Identity()
+          )
+          (relu1): Identity()
+          (relu2): Identity()
+        )
+        (2): QuantizableBottleneck(
+          (conv1): QuantizedConvReLU2d(256, 64, kernel_size=(1, 1), stride=(1, 1), scale=0.046280041337013245, zero_point=0)
+          (bn1): Identity()
+          (conv2): QuantizedConvReLU2d(64, 64, kernel_size=(3, 3), stride=(1, 1), scale=0.04027241840958595, zero_point=0, padding=(1, 1))
+          (bn2): Identity()
+          (conv3): QuantizedConv2d(64, 256, kernel_size=(1, 1), stride=(1, 1), scale=0.07484981417655945, zero_point=54)
+          (bn3): Identity()
+          (relu): QuantizedReLU(inplace=True)
+          (skip_add_relu): QFunctional(
+            scale=0.072534941136837, zero_point=0
+            (activation_post_process): Identity()
+          )
+          (relu1): Identity()
+          (relu2): Identity()
+        )
+      )
+      (layer2): Sequential(
+        (0): QuantizableBottleneck(
+          (conv1): QuantizedConvReLU2d(256, 128, kernel_size=(1, 1), stride=(2, 2), scale=0.061848558485507965, zero_point=0)
+          (bn1): Identity()
+          (conv2): QuantizedConvReLU2d(128, 128, kernel_size=(3, 3), stride=(1, 1), scale=0.05014919862151146, zero_point=0, padding=(1, 1))
+          (bn2): Identity()
+          (conv3): QuantizedConv2d(128, 512, kernel_size=(1, 1), stride=(1, 1), scale=0.18162164092063904, zero_point=58)
+          (bn3): Identity()
+          (relu): QuantizedReLU(inplace=True)
+          (downsample): Sequential(
+            (0): QuantizedConv2d(256, 512, kernel_size=(1, 1), stride=(2, 2), scale=0.1260235607624054, zero_point=49)
+            (1): Identity()
+          )
+          (skip_add_relu): QFunctional(
+            scale=0.11020783334970474, zero_point=0
+            (activation_post_process): Identity()
+          )
+          (relu1): Identity()
+          (relu2): Identity()
+        )
+        (1): QuantizableBottleneck(
+          (conv1): QuantizedConvReLU2d(512, 128, kernel_size=(1, 1), stride=(1, 1), scale=0.08028460294008255, zero_point=0)
+          (bn1): Identity()
+          (conv2): QuantizedConvReLU2d(128, 128, kernel_size=(3, 3), stride=(1, 1), scale=0.07074952870607376, zero_point=0, padding=(1, 1))
+          (bn2): Identity()
+          (conv3): QuantizedConv2d(128, 512, kernel_size=(1, 1), stride=(1, 1), scale=0.19560614228248596, zero_point=36)
+          (bn3): Identity()
+          (relu): QuantizedReLU(inplace=True)
+          (skip_add_relu): QFunctional(
+            scale=0.14064529538154602, zero_point=0
+            (activation_post_process): Identity()
+          )
+          (relu1): Identity()
+          (relu2): Identity()
+        )
+        (2): QuantizableBottleneck(
+          (conv1): QuantizedConvReLU2d(512, 128, kernel_size=(1, 1), stride=(1, 1), scale=0.16221757233142853, zero_point=0)
+          (bn1): Identity()
+          (conv2): QuantizedConvReLU2d(128, 128, kernel_size=(3, 3), stride=(1, 1), scale=0.4094791114330292, zero_point=0, padding=(1, 1))
+          (bn2): Identity()
+          (conv3): QuantizedConv2d(128, 512, kernel_size=(1, 1), stride=(1, 1), scale=0.3097151517868042, zero_point=75)
+          (bn3): Identity()
+          (relu): QuantizedReLU(inplace=True)
+          (skip_add_relu): QFunctional(
+            scale=0.13712123036384583, zero_point=0
+            (activation_post_process): Identity()
+          )
+          (relu1): Identity()
+          (relu2): Identity()
+        )
+        (3): QuantizableBottleneck(
+          (conv1): QuantizedConvReLU2d(512, 128, kernel_size=(1, 1), stride=(1, 1), scale=0.190695658326149, zero_point=0)
+          (bn1): Identity()
+          (conv2): QuantizedConvReLU2d(128, 128, kernel_size=(3, 3), stride=(1, 1), scale=0.07983183115720749, zero_point=0, padding=(1, 1))
+          (bn2): Identity()
+          (conv3): QuantizedConv2d(128, 512, kernel_size=(1, 1), stride=(1, 1), scale=0.16630864143371582, zero_point=63)
+          (bn3): Identity()
+          (relu): QuantizedReLU(inplace=True)
+          (skip_add_relu): QFunctional(
+            scale=0.12982359528541565, zero_point=0
+            (activation_post_process): Identity()
+          )
+          (relu1): Identity()
+          (relu2): Identity()
+        )
+      )
+      (layer3): Sequential(
+        (0): QuantizableBottleneck(
+          (conv1): QuantizedConvReLU2d(512, 256, kernel_size=(1, 1), stride=(2, 2), scale=0.09615420550107956, zero_point=0)
+          (bn1): Identity()
+          (conv2): QuantizedConvReLU2d(256, 256, kernel_size=(3, 3), stride=(1, 1), scale=0.054949063807725906, zero_point=0, padding=(1, 1))
+          (bn2): Identity()
+          (conv3): QuantizedConv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), scale=0.18288016319274902, zero_point=56)
+          (bn3): Identity()
+          (relu): QuantizedReLU(inplace=True)
+          (downsample): Sequential(
+            (0): QuantizedConv2d(512, 1024, kernel_size=(1, 1), stride=(2, 2), scale=0.18927708268165588, zero_point=59)
+            (1): Identity()
+          )
+          (skip_add_relu): QFunctional(
+            scale=0.12229654937982559, zero_point=0
+            (activation_post_process): Identity()
+          )
+          (relu1): Identity()
+          (relu2): Identity()
+        )
+        (1): QuantizableBottleneck(
+          (conv1): QuantizedConvReLU2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), scale=0.0746455118060112, zero_point=0)
+          (bn1): Identity()
+          (conv2): QuantizedConvReLU2d(256, 256, kernel_size=(3, 3), stride=(1, 1), scale=0.11470487713813782, zero_point=0, padding=(1, 1))
+          (bn2): Identity()
+          (conv3): QuantizedConv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), scale=0.16742826998233795, zero_point=74)
+          (bn3): Identity()
+          (relu): QuantizedReLU(inplace=True)
+          (skip_add_relu): QFunctional(
+            scale=0.13016551733016968, zero_point=0
+            (activation_post_process): Identity()
+          )
+          (relu1): Identity()
+          (relu2): Identity()
+        )
+        (2): QuantizableBottleneck(
+          (conv1): QuantizedConvReLU2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), scale=0.07325241714715958, zero_point=0)
+          (bn1): Identity()
+          (conv2): QuantizedConvReLU2d(256, 256, kernel_size=(3, 3), stride=(1, 1), scale=0.0761243924498558, zero_point=0, padding=(1, 1))
+          (bn2): Identity()
+          (conv3): QuantizedConv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), scale=0.19199146330356598, zero_point=64)
+          (bn3): Identity()
+          (relu): QuantizedReLU(inplace=True)
+          (skip_add_relu): QFunctional(
+            scale=0.20060844719409943, zero_point=0
+            (activation_post_process): Identity()
+          )
+          (relu1): Identity()
+          (relu2): Identity()
+        )
+        (3): QuantizableBottleneck(
+          (conv1): QuantizedConvReLU2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), scale=0.06544126570224762, zero_point=0)
+          (bn1): Identity()
+          (conv2): QuantizedConvReLU2d(256, 256, kernel_size=(3, 3), stride=(1, 1), scale=0.07535520941019058, zero_point=0, padding=(1, 1))
+          (bn2): Identity()
+          (conv3): QuantizedConv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), scale=0.19745686650276184, zero_point=65)
+          (bn3): Identity()
+          (relu): QuantizedReLU(inplace=True)
+          (skip_add_relu): QFunctional(
+            scale=0.28685134649276733, zero_point=0
+            (activation_post_process): Identity()
+          )
+          (relu1): Identity()
+          (relu2): Identity()
+        )
+        (4): QuantizableBottleneck(
+          (conv1): QuantizedConvReLU2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), scale=0.0839015394449234, zero_point=0)
+          (bn1): Identity()
+          (conv2): QuantizedConvReLU2d(256, 256, kernel_size=(3, 3), stride=(1, 1), scale=0.11074976623058319, zero_point=0, padding=(1, 1))
+          (bn2): Identity()
+          (conv3): QuantizedConv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), scale=0.19015319645404816, zero_point=67)
+          (bn3): Identity()
+          (relu): QuantizedReLU(inplace=True)
+          (skip_add_relu): QFunctional(
+            scale=0.3029126226902008, zero_point=0
+            (activation_post_process): Identity()
+          )
+          (relu1): Identity()
+          (relu2): Identity()
+        )
+        (5): QuantizableBottleneck(
+          (conv1): QuantizedConvReLU2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), scale=0.07465966790914536, zero_point=0)
+          (bn1): Identity()
+          (conv2): QuantizedConvReLU2d(256, 256, kernel_size=(3, 3), stride=(1, 1), scale=0.132863849401474, zero_point=0, padding=(1, 1))
+          (bn2): Identity()
+          (conv3): QuantizedConv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), scale=0.19599612057209015, zero_point=82)
+          (bn3): Identity()
+          (relu): QuantizedReLU(inplace=True)
+          (skip_add_relu): QFunctional(
+            scale=0.24158528447151184, zero_point=0
+            (activation_post_process): Identity()
+          )
+          (relu1): Identity()
+          (relu2): Identity()
+        )
+      )
+      (layer4): Sequential(
+        (0): QuantizableBottleneck(
+          (conv1): QuantizedConvReLU2d(1024, 512, kernel_size=(1, 1), stride=(1, 1), scale=0.04780295491218567, zero_point=0)
+          (bn1): Identity()
+          (conv2): QuantizedConvReLU2d(512, 512, kernel_size=(3, 3), stride=(1, 1), scale=0.029049590229988098, zero_point=0, padding=(2, 2), dilation=(2, 2))
+          (bn2): Identity()
+          (conv3): QuantizedConv2d(512, 2048, kernel_size=(1, 1), stride=(1, 1), scale=0.17999109625816345, zero_point=59)
+          (bn3): Identity()
+          (relu): QuantizedReLU(inplace=True)
+          (downsample): Sequential(
+            (0): QuantizedConv2d(1024, 2048, kernel_size=(1, 1), stride=(1, 1), scale=0.45696890354156494, zero_point=66)
+            (1): Identity()
+          )
+          (skip_add_relu): QFunctional(
+            scale=0.23762275278568268, zero_point=0
+            (activation_post_process): Identity()
+          )
+          (relu1): Identity()
+          (relu2): Identity()
+        )
+        (1): QuantizableBottleneck(
+          (conv1): QuantizedConvReLU2d(2048, 512, kernel_size=(1, 1), stride=(1, 1), scale=0.04045768827199936, zero_point=0)
+          (bn1): Identity()
+          (conv2): QuantizedConvReLU2d(512, 512, kernel_size=(3, 3), stride=(1, 1), scale=0.02095748297870159, zero_point=0, padding=(2, 2), dilation=(2, 2))
+          (bn2): Identity()
+          (conv3): QuantizedConv2d(512, 2048, kernel_size=(1, 1), stride=(1, 1), scale=0.15817902982234955, zero_point=61)
+          (bn3): Identity()
+          (relu): QuantizedReLU(inplace=True)
+          (skip_add_relu): QFunctional(
+            scale=0.299721896648407, zero_point=0
+            (activation_post_process): Identity()
+          )
+          (relu1): Identity()
+          (relu2): Identity()
+        )
+        (2): QuantizableBottleneck(
+          (conv1): QuantizedConvReLU2d(2048, 512, kernel_size=(1, 1), stride=(1, 1), scale=0.03194940462708473, zero_point=0)
+          (bn1): Identity()
+          (conv2): QuantizedConvReLU2d(512, 512, kernel_size=(3, 3), stride=(1, 1), scale=0.023267362266778946, zero_point=0, padding=(2, 2), dilation=(2, 2))
+          (bn2): Identity()
+          (conv3): QuantizedConv2d(512, 2048, kernel_size=(1, 1), stride=(1, 1), scale=0.23043212294578552, zero_point=57)
+          (bn3): Identity()
+          (relu): QuantizedReLU(inplace=True)
+          (skip_add_relu): QFunctional(
+            scale=0.30056312680244446, zero_point=0
+            (activation_post_process): Identity()
+          )
+          (relu1): Identity()
+          (relu2): Identity()
+        )
+      )
+      (relu0): QuantizedReLU()
+    )
+    (ppms_pre): QuantizedConv2d(2048, 512, kernel_size=(1, 1), stride=(1, 1), scale=0.102324940264225, zero_point=58, bias=False)
+    (ppms): ModuleList(
+      (0): Sequential(
+        (0): AdaptiveAvgPool2d(output_size=1)
+        (1): QuantizedConvReLU2d(512, 512, kernel_size=(1, 1), stride=(1, 1), scale=0.01722900941967964, zero_point=0, bias=False)
+        (2): Identity()
+      )
+      (1): Sequential(
+        (0): AdaptiveAvgPool2d(output_size=3)
+        (1): QuantizedConvReLU2d(512, 512, kernel_size=(1, 1), stride=(1, 1), scale=0.011388872750103474, zero_point=0, bias=False)
+        (2): Identity()
+      )
+      (2): Sequential(
+        (0): AdaptiveAvgPool2d(output_size=5)
+        (1): QuantizedConvReLU2d(512, 512, kernel_size=(1, 1), stride=(1, 1), scale=0.01674172654747963, zero_point=0, bias=False)
+        (2): Identity()
+      )
+    )
+    (ppm_cat): Sequential(
+      (0): QuantizedConvReLU2d(2048, 512, kernel_size=(3, 3), stride=(1, 1), scale=0.13836003839969635, zero_point=0, padding=(1, 1), bias=False)
+      (1): Identity()
+    )
+    (infos): ModuleList(
+      (0): Sequential(
+        (0): QuantizedConvReLU2d(512, 512, kernel_size=(3, 3), stride=(1, 1), scale=0.06325993686914444, zero_point=0, padding=(1, 1), bias=False)
+        (1): Identity()
+      )
+      (1): Sequential(
+        (0): QuantizedConvReLU2d(512, 256, kernel_size=(3, 3), stride=(1, 1), scale=0.14086872339248657, zero_point=0, padding=(1, 1), bias=False)
+        (1): Identity()
+      )
+      (2): Sequential(
+        (0): QuantizedConvReLU2d(512, 256, kernel_size=(3, 3), stride=(1, 1), scale=0.17792248725891113, zero_point=0, padding=(1, 1), bias=False)
+        (1): Identity()
+      )
+      (3): Sequential(
+        (0): QuantizedConvReLU2d(512, 128, kernel_size=(3, 3), stride=(1, 1), scale=0.287797749042511, zero_point=0, padding=(1, 1), bias=False)
+        (1): Identity()
+      )
+    )
+  )
+  (deep_pool): ModuleList(
+    (0): DeepPoolLayer(
+      (pools): ModuleList(
+        (0): AvgPool2d(kernel_size=2, stride=2, padding=0)
+        (1): AvgPool2d(kernel_size=4, stride=4, padding=0)
+        (2): AvgPool2d(kernel_size=8, stride=8, padding=0)
+      )
+      (convs): ModuleList(
+        (0): QuantizedConv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), scale=0.01624193973839283, zero_point=89, padding=(1, 1), bias=False)
+        (1): QuantizedConv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), scale=0.014693377539515495, zero_point=101, padding=(1, 1), bias=False)
+        (2): QuantizedConv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), scale=0.008847511373460293, zero_point=81, padding=(1, 1), bias=False)
+      )
+      (q_add00): QFunctional(
+        scale=0.035190656781196594, zero_point=38
+        (activation_post_process): Identity()
+      )
+      (q_add01): QFunctional(
+        scale=0.044268373399972916, zero_point=60
+        (activation_post_process): Identity()
+      )
+      (q_add02): QFunctional(
+        scale=0.04756784811615944, zero_point=67
+        (activation_post_process): Identity()
+      )
+      (relu): QuantizedReLU()
+      (conv_sum): QuantizedConv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), scale=0.013464218936860561, zero_point=59, padding=(1, 1), bias=False)
+      (q_add1): QFunctional(
+        scale=0.029756741598248482, zero_point=24
+        (activation_post_process): Identity()
+      )
+      (q_add2): QFunctional(
+        scale=0.07384656369686127, zero_point=10
+        (activation_post_process): Identity()
+      )
+      (conv_sum_c): QuantizedConv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), scale=0.02809448353946209, zero_point=70, padding=(1, 1), bias=False)
+    )
+    (1): DeepPoolLayer(
+      (pools): ModuleList(
+        (0): AvgPool2d(kernel_size=2, stride=2, padding=0)
+        (1): AvgPool2d(kernel_size=4, stride=4, padding=0)
+        (2): AvgPool2d(kernel_size=8, stride=8, padding=0)
+      )
+      (convs): ModuleList(
+        (0): QuantizedConv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), scale=0.03144259750843048, zero_point=76, padding=(1, 1), bias=False)
+        (1): QuantizedConv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), scale=0.033330611884593964, zero_point=71, padding=(1, 1), bias=False)
+        (2): QuantizedConv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), scale=0.02111992798745632, zero_point=59, padding=(1, 1), bias=False)
+      )
+      (q_add00): QFunctional(
+        scale=0.04111484810709953, zero_point=65
+        (activation_post_process): Identity()
+      )
+      (q_add01): QFunctional(
+        scale=0.06191345304250717, zero_point=67
+        (activation_post_process): Identity()
+      )
+      (q_add02): QFunctional(
+        scale=0.07433541119098663, zero_point=66
+        (activation_post_process): Identity()
+      )
+      (relu): QuantizedReLU()
+      (conv_sum): QuantizedConv2d(512, 256, kernel_size=(3, 3), stride=(1, 1), scale=0.023398306220769882, zero_point=62, padding=(1, 1), bias=False)
+      (q_add1): QFunctional(
+        scale=0.03785167634487152, zero_point=38
+        (activation_post_process): Identity()
+      )
+      (q_add2): QFunctional(
+        scale=0.17495685815811157, zero_point=8
+        (activation_post_process): Identity()
+      )
+      (conv_sum_c): QuantizedConv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), scale=0.04885292053222656, zero_point=58, padding=(1, 1), bias=False)
+    )
+    (2): DeepPoolLayer(
+      (pools): ModuleList(
+        (0): AvgPool2d(kernel_size=2, stride=2, padding=0)
+        (1): AvgPool2d(kernel_size=4, stride=4, padding=0)
+        (2): AvgPool2d(kernel_size=8, stride=8, padding=0)
+      )
+      (convs): ModuleList(
+        (0): QuantizedConv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), scale=0.030275361612439156, zero_point=71, padding=(1, 1), bias=False)
+        (1): QuantizedConv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), scale=0.02590889297425747, zero_point=66, padding=(1, 1), bias=False)
+        (2): QuantizedConv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), scale=0.028200726956129074, zero_point=69, padding=(1, 1), bias=False)
+      )
+      (q_add00): QFunctional(
+        scale=0.06719833612442017, zero_point=55
+        (activation_post_process): Identity()
+      )
+      (q_add01): QFunctional(
+        scale=0.07262136787176132, zero_point=57
+        (activation_post_process): Identity()
+      )
+      (q_add02): QFunctional(
+        scale=0.07960666716098785, zero_point=62
+        (activation_post_process): Identity()
+      )
+      (relu): QuantizedReLU()
+      (conv_sum): QuantizedConv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), scale=0.0408148355782032, zero_point=72, padding=(1, 1), bias=False)
+      (q_add1): QFunctional(
+        scale=0.055386852473020554, zero_point=53
+        (activation_post_process): Identity()
+      )
+      (q_add2): QFunctional(
+        scale=0.20833943784236908, zero_point=14
+        (activation_post_process): Identity()
+      )
+      (conv_sum_c): QuantizedConv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), scale=0.14749115705490112, zero_point=49, padding=(1, 1), bias=False)
+    )
+    (3): DeepPoolLayer(
+      (pools): ModuleList(
+        (0): AvgPool2d(kernel_size=2, stride=2, padding=0)
+        (1): AvgPool2d(kernel_size=4, stride=4, padding=0)
+        (2): AvgPool2d(kernel_size=8, stride=8, padding=0)
+      )
+      (convs): ModuleList(
+        (0): QuantizedConv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), scale=0.09739081561565399, zero_point=63, padding=(1, 1), bias=False)
+        (1): QuantizedConv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), scale=0.06845005601644516, zero_point=70, padding=(1, 1), bias=False)
+        (2): QuantizedConv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), scale=0.05706489086151123, zero_point=69, padding=(1, 1), bias=False)
+      )
+      (q_add00): QFunctional(
+        scale=0.2369179129600525, zero_point=53
+        (activation_post_process): Identity()
+      )
+      (q_add01): QFunctional(
+        scale=0.2559434473514557, zero_point=55
+        (activation_post_process): Identity()
+      )
+      (q_add02): QFunctional(
+        scale=0.26847004890441895, zero_point=51
+        (activation_post_process): Identity()
+      )
+      (relu): QuantizedReLU()
+      (conv_sum): QuantizedConv2d(256, 128, kernel_size=(3, 3), stride=(1, 1), scale=0.30173906683921814, zero_point=79, padding=(1, 1), bias=False)
+      (q_add1): QFunctional(
+        scale=0.2995360195636749, zero_point=78
+        (activation_post_process): Identity()
+      )
+      (q_add2): QFunctional(
+        scale=0.48580798506736755, zero_point=48
+        (activation_post_process): Identity()
+      )
+      (conv_sum_c): QuantizedConv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), scale=0.606016993522644, zero_point=58, padding=(1, 1), bias=False)
+    )
+    (4): DeepPoolLayer(
+      (pools): ModuleList(
+        (0): AvgPool2d(kernel_size=2, stride=2, padding=0)
+        (1): AvgPool2d(kernel_size=4, stride=4, padding=0)
+        (2): AvgPool2d(kernel_size=8, stride=8, padding=0)
+      )
+      (convs): ModuleList(
+        (0): QuantizedConv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), scale=0.5860228538513184, zero_point=70, padding=(1, 1), bias=False)
+        (1): QuantizedConv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), scale=0.20740340650081635, zero_point=75, padding=(1, 1), bias=False)
+        (2): QuantizedConv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), scale=0.35730722546577454, zero_point=61, padding=(1, 1), bias=False)
+      )
+      (q_add00): QFunctional(
+        scale=0.7780044674873352, zero_point=62
+        (activation_post_process): Identity()
+      )
+      (q_add01): QFunctional(
+        scale=0.896721363067627, zero_point=68
+        (activation_post_process): Identity()
+      )
+      (q_add02): QFunctional(
+        scale=0.8498244285583496, zero_point=63
+        (activation_post_process): Identity()
+      )
+      (relu): QuantizedReLU()
+      (conv_sum): QuantizedConv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), scale=0.42993223667144775, zero_point=68, padding=(1, 1), bias=False)
+    )
+  )
+  (score): ScoreLayer(
+    (score): QuantizedConv2d(128, 1, kernel_size=(1, 1), stride=(1, 1), scale=0.1281168907880783, zero_point=127)
+  )
+  (convert): ConvertLayer(
+    (convert0): ModuleList(
+      (0): Sequential(
+        (0): QuantizedConvReLU2d(64, 128, kernel_size=(1, 1), stride=(1, 1), scale=0.005124656017869711, zero_point=0, bias=False)
+        (1): Identity()
+      )
+      (1): Sequential(
+        (0): QuantizedConvReLU2d(256, 256, kernel_size=(1, 1), stride=(1, 1), scale=0.03420843929052353, zero_point=0, bias=False)
+        (1): Identity()
+      )
+      (2): Sequential(
+        (0): QuantizedConvReLU2d(512, 256, kernel_size=(1, 1), stride=(1, 1), scale=0.02818094752728939, zero_point=0, bias=False)
+        (1): Identity()
+      )
+      (3): Sequential(
+        (0): QuantizedConvReLU2d(1024, 512, kernel_size=(1, 1), stride=(1, 1), scale=0.024238601326942444, zero_point=0, bias=False)
+        (1): Identity()
+      )
+      (4): Sequential(
+        (0): QuantizedConvReLU2d(2048, 512, kernel_size=(1, 1), stride=(1, 1), scale=0.025196539238095284, zero_point=0, bias=False)
+        (1): Identity()
+      )
+    )
+  )
+  (quant): Quantize(scale=tensor([0.0079]), zero_point=tensor([0]), dtype=torch.quint8)
+  (dequant): DeQuantize()
+)

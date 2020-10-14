@@ -5,6 +5,7 @@ import torch.nn.functional as F
 import math
 from torch.autograd import Variable
 import numpy as np
+from torch.nn.quantized import FloatFunctional
 
 #from .deeplab_resnet import resnet50_locate
 
@@ -34,7 +35,7 @@ class ConvertLayer(nn.Module):
 
 class DeepPoolLayer(nn.Module):
     def __init__(self, k, k_out, need_x2, need_fuse):
-        super(DeepPoolLayer, self).__init__()
+        super(DeepPoolLayer, self).__init__()       
         self.pools_sizes = [2,4,8]
         self.need_x2 = need_x2
         self.need_fuse = need_fuse
@@ -44,23 +45,44 @@ class DeepPoolLayer(nn.Module):
             convs.append(nn.Conv2d(k, k, 3, 1, 1, bias=False))
         self.pools = nn.ModuleList(pools)
         self.convs = nn.ModuleList(convs)
+        self.q_add00 = FloatFunctional()
+        self.q_add01 = FloatFunctional()
+        self.q_add02 = FloatFunctional()
         self.relu = nn.ReLU()
         self.conv_sum = nn.Conv2d(k, k_out, 3, 1, 1, bias=False)
         if self.need_fuse:
+            self.q_add1 = FloatFunctional()
+            self.q_add2 = FloatFunctional() 
             self.conv_sum_c = nn.Conv2d(k_out, k_out, 3, 1, 1, bias=False)
 
     def forward(self, x, x2=None, x3=None):
         x_size = x.size()
         resl = x
-        for i in range(len(self.pools_sizes)):
-            y = self.convs[i](self.pools[i](x))
-            resl = torch.add(resl, F.interpolate(y, x_size[2:], mode='bilinear', align_corners=True))
+        #for i in range(len(self.pools_sizes)):
+           
+        y0 = self.convs[0](self.pools[0](x))
+        z0 = nn.functional.interpolate(y0, x_size[2:], mode='bilinear', align_corners=True)
+        
+        y1 = self.convs[1](self.pools[1](x))
+        z1 = nn.functional.interpolate(y1, x_size[2:], mode='bilinear', align_corners=True)
+        
+        y2 = self.convs[2](self.pools[2](x))
+        z2 = nn.functional.interpolate(y2, x_size[2:], mode='bilinear', align_corners=True)
+        
+        resl = self.q_add00.add(resl, z0)
+        resl = self.q_add01.add(resl, z1)   
+        resl = self.q_add02.add(resl, z2)
+
         resl = self.relu(resl)
+
         if self.need_x2:
-            resl = F.interpolate(resl, x2.size()[2:], mode='bilinear', align_corners=True)
+            resl = nn.functional.interpolate(resl, x2.size()[2:], mode='bilinear', align_corners=True)
         resl = self.conv_sum(resl)
+
         if self.need_fuse:
-            resl = self.conv_sum_c(torch.add(torch.add(resl, x2), x3))
+            resl = self.q_add1.add(resl, x2)
+            resl = self.q_add2.add(resl, x3)
+            resl = self.conv_sum_c(resl)
         return resl
 
 class ScoreLayer(nn.Module):
@@ -71,7 +93,7 @@ class ScoreLayer(nn.Module):
     def forward(self, x, x_size=None):
         x = self.score(x)
         if x_size is not None:
-            x = F.interpolate(x, x_size[2:], mode='bilinear', align_corners=True)
+            x = nn.functional.interpolate(x, x_size[2:], mode='bilinear', align_corners=True)
         return x
 
 
@@ -91,12 +113,33 @@ class PoolNet(nn.Module):
 
         #self.base_model_cfg = 'resnet'
         self.base = ResNet_locate(Bottleneck, [3, 4, 6, 3])
+
         self.deep_pool = nn.ModuleList(deep_pool_layers)
         self.score = score_layers
         #if self.base_model_cfg == 'resnet':
         self.convert = convert_layers
+        # for m in self.modules():
+        #   print(type(m))
 
-    def forward(self, x):
+
+    # def forward(self, x):
+      
+    #     x_size = x.size()
+    #     conv2merge, infos = self.base(x)
+    #     #if self.base_model_cfg == 'resnet':
+    #     conv2merge = self.convert(conv2merge)
+    #     conv2merge = conv2merge[::-1]
+
+    #     edge_merge = []
+    #     merge = self.deep_pool[0](conv2merge[0], conv2merge[1], infos[0])
+    #     for k in range(1, len(conv2merge)-1):
+    #         merge = self.deep_pool[k](merge, conv2merge[k+1], infos[k])
+
+    #     merge = self.deep_pool[-1](merge)
+    #     merge = self.score(merge, x_size)
+    #     return merge
+
+    def _forward_impl(self, x):
         x_size = x.size()
         conv2merge, infos = self.base(x)
         #if self.base_model_cfg == 'resnet':
@@ -110,25 +153,83 @@ class PoolNet(nn.Module):
 
         merge = self.deep_pool[-1](merge)
         merge = self.score(merge, x_size)
-        return merge
+        return merge    
+
+    def forward(self, x):
+        return self._forward_impl(x)
+
+
+                  
+class QuantizablePoolNet(PoolNet):
+    def __init__(self,*args, **kwargs):
+        super(QuantizablePoolNet, self).__init__(*args, **kwargs)
+
+        self.base = QuantizableResNet_locate(QuantizableBottleneck, [3, 4, 6, 3])
+
+        self.quant = torch.quantization.QuantStub()
+        self.dequant = torch.quantization.DeQuantStub()
+
+
+    def forward(self, x):
+        x = self.quant(x)
+        x = self._forward_impl(x)
+        x = self.dequant(x)
+        return x      
 
     def fuse_model(self):
-        r"""Fuse conv/bn/relu modules in resnet models
-        Fuse conv+bn+relu/ Conv+relu/conv+Bn modules to prepare for quantization.
-        Model is modified in place.  Note that this operation does not change numerics
-        and the model after modification is in floating point
-        """
         for m in self.modules():
-            print(type(m))
-            if type(m) == ConvertLayer:
-                  
-                  m.fuse_model()
-                  
+            if type(m) == ConvertLayer or type(m) == QuantizableResNet_locate:
+                  m.fuse_model()        
+
+
 def weights_init(m):
     if isinstance(m, nn.Conv2d):
         m.weight.data.normal_(0, 0.01)
         if m.bias is not None:
             m.bias.data.zero_()
 
-def PNModel():
+def PNModelfull():
     return PoolNet()
+
+fullPNModel = PNModelfull()
+# torch.save(fullPNModel.state_dict(), 'PoolNet1.pth')
+
+model = QuantizablePoolNet()    
+model.load_state_dict(torch.load('/content/PoolNet/final.pth', map_location='cpu'))              
+quantize_model(model, 'fbgemm')
+torch.save(model.state_dict(), 'PoolNet1.pth')
+print(model)
+
+def QuantizedPoolNet():
+    PNModel = QuantizablePoolNet()    
+    PNModel.fuse_model()
+
+    _replace_relu(PNModel)
+    _dummy_input_data = torch.rand(1, 3, 299, 299)
+    # TODO use pretrained as a string to specify the backend
+    backend = 'fbgemm'
+    if backend not in torch.backends.quantized.supported_engines:
+        raise RuntimeError("Quantized backend not supported ")
+    torch.backends.quantized.engine = backend
+    PNModel.eval()
+    # Make sure that weight qconfig matches that of the serialized PNModels
+    if backend == 'fbgemm':
+        PNModel.qconfig = torch.quantization.QConfig(
+            activation=torch.quantization.default_observer,
+            weight=torch.quantization.default_per_channel_weight_observer)
+    elif backend == 'qnnpack':
+        PNModel.qconfig = torch.quantization.QConfig(
+            activation=torch.quantization.default_observer,
+            weight=torch.quantization.default_weight_observer)
+
+    
+    torch.quantization.prepare(PNModel, inplace=True)
+    
+    #print(type(PNModel))
+    PNModel(_dummy_input_data)
+    torch.quantization.convert(PNModel, inplace=True)
+    #print(PNModel)
+
+    return PNModel
+
+#finalModel = QuantizedPoolNet()    
